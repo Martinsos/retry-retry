@@ -1,0 +1,29 @@
+{
+  "name": "retry-retry",
+  "version": "0.0.1",
+  "description": "Javascript library for easy retrying of tasks, with full support for promises.",
+  "main": "retry-retry.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Martinsos/retry-retry.git"
+  },
+  "keywords": [
+    "retry",
+    "timeout",
+    "interval",
+    "repeat",
+    "promise"
+  ],
+  "author": "Martin Sosic <sosic.martin@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Martinsos/retry-retry/issues"
+  },
+  "homepage": "https://github.com/Martinsos/retry-retry#readme",
+  "devDependencies": {
+    "jest": "^22.1.4"
+  }
+}
