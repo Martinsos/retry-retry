@@ -1,8 +1,9 @@
 {
   "name": "retry-retry",
-  "version": "0.0.1",
-  "description": "Javascript library for easy retrying of tasks, with full support for promises.",
+  "version": "1.0.0",
+  "description": "Javascript library for easy retrying of promise based tasks.",
   "main": "retry-retry.js",
+  "files": ["retry-retry.js"],
   "scripts": {
     "test": "jest"
   },
