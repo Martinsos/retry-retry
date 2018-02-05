@@ -30,7 +30,7 @@ const resource = await retry(async (_retry) => {
 - Has fun name.
 
 
-## Using in your project
+## Including in your project
 retry-retry is available on npm, so just install it with
 ```
 npm install -S retry-retry
@@ -45,9 +45,8 @@ or if you have ES6 modules enabled, with
 import retry from 'retry-retry'
 ```
 
-You can also directly include `retry-retry.js` into your code using `script` tag.
-retry-retry sets `window['retry-retry']` to `retry` function (if there is a window object),
-so you can access it like this:
+In case you use `script` tag to include retry-retry, retry-retry sets `window['retry-retry']`
+to `retry()` function (if there is a window object), so you can access it like this:
 ```js
 const retry = window['retry-retry']
 ```
@@ -59,6 +58,19 @@ retry-retry has only one public function: `retry`.
 In order to run your function many times, you just pass it to `retry` and then have it signal
 that it succeeded / wants to try again / is giving up.
 You can also pass additional options to `retry` for finer control of how retrying is done.
+
+You function "signals" success by resolving the returned promise (under one condition,
+read on).
+
+It "signals" final failure (or "giving up") by rejecting the returned promise.
+
+Finally, your function signals neither success nor failure but wish to try again by calling
+callback that it receives as a first paramater ('_retry' in examples) at least once before
+resolving the returned promise (Yes, this is the condition mentioned before! You must not call
+`_retry()` if you wish to signal success, obviously).
+In that case, it will be retried. Please note that calling `_retry()` does not affect execution of
+your function - it merely raises the `retry-retry`'s internal flag that will be checked upon
+resolved promise to decide if it was success or signal for another try.
 
 That is it! Check examples below and API for more details.
 
