@@ -1,3 +1,5 @@
+(function () {
+"use strict"
 
 /**
  * Picks best avaiable function for measuring current time, tailored for performance measurement.
@@ -74,7 +76,7 @@ const retry = async (task, params = {}) => {
   for (let tryIdx = 0; maxTries == 0 || tryIdx < maxTries; tryIdx++) {
     let retry = false
 
-    taskResult = await task(() => retry = true)
+    const taskResult = await task(() => retry = true)
 
     if (!retry) {
       return taskResult  // Propagate the result. We are done, task was successful!
@@ -103,3 +105,5 @@ const retry = async (task, params = {}) => {
 }
 
 module.exports = retry
+if (window) window['retry-retry'] = retry
+})()

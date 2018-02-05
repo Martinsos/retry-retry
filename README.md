@@ -38,13 +38,19 @@ npm install -S retry-retry
 
 There is only one main function, `retry`, which you can import in your code with
 ```js
-const retry = require('./retry-retry')
+const retry = require('retry-retry')
 ```
-or with
+or if you have ES6 modules enabled, with
 ```js
-import { retry } from 'retry-retry'
+import retry from 'retry-retry'
 ```
-TODO: or is it `import retry from 'retry-retry'`?
+
+You can also directly include `retry-retry.js` into your code using `script` tag.
+retry-retry sets `window['retry-retry']` to `retry` function (if there is a window object),
+so you can access it like this:
+```js
+const retry = window['retry-retry']
+```
 
 ## Usage and examples
 
@@ -124,6 +130,7 @@ TODO
 ## FAQ
 
 Q: Where did the name `retry-retry` come from?
+
 A: First of all, `retry` was already taken :D.
    Second, it should be a (f/p)unny name because it repeats / "retries" word "retry" two times.
    Finally, if you pass `retry()` an arrow function like this `retry(_retry => ...)` it looks
