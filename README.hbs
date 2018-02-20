@@ -136,46 +136,9 @@ taking over our whole day.
 
 ## API
 
-<a name="exp_module_retry-retry--retry"></a>
-
-## retry(task, [params]) ⇒ <code>Promise</code> ⏏
-Tries to execute given task repeatedly until the task succeeds, fails, or until retry limit
-(number of tries or total time) is reached.
-
-**Kind**: Exported function  
-**Returns**: <code>Promise</code> - Resolved with task's value on task success or rejected with task's error on
-    task failure. Rejected with `retry.LimitReached` if one of retry limits was reached.  
-**Params**
-
-- task <code>function</code> - Function that returns promise.
-    If that promise is resolved, task succeded, retrying stops and result is propagated.
-    If that promise is rejected with `retry.Retry` (or some other chosen error,
-      see `params.retryOn`), task is retried.
-    If that promise is rejected with any other error, task failed, retrying stops and error is
-      propagated.
-- [params] <code>object</code> - Additional options. Optional.
-    - [.pauseMs] <code>integer</code> - Pause between the end of the last try and the start of the next try,
-    in milliseconds. This is default behaviour, but it might be modified with `retryStrategy`
-    option. Has to be non-negative. Default is 0.
-    - [.maxTries] <code>integer</code> - Retry limit. Number of tries after which retrying will stop.
-    Has to be non-negative. Default is 0, which means there is no limit on number of tries.
-    - [.maxTotalTimeMs] <code>integer</code> - Retry limit. If more than `maxTotalTimeMs` milliseconds
-    has elapsed since the first try started, retrying will stop. Has to be non-negative.
-    Default is 0, which means there is no time limit.
-    - [.retryOn] <code>function</code> - Function that takes error with which promise was
-    rejected and returns true if task should be repeated or false if error should be propagated.
-    This way you can trigger retry on different errors than just `retry.Retry`.
-    By default, it is `(e) => e === retry.Retry`.
-    - [.retryStrategy] <code>string</code> | <code>function</code> - Strategy that will be used to
-    determine pause between two consecutive tries. Possible values:
-      - `'linear'` - This is default strategy. Same pause of `pauseMs` milliseconds is always
-          taken between two tries.
-      - `'exponential'` - First pause is `pauseMs` milliseconds, second is 2 * `pauseMs`, ...,
-          and N-th is 2^N * `pauseMs`.
-      - Function that takes number of tries so far and returns pause in milliseconds from the
-          end of last try until the start of next try. So after first try `numTries` will be 1.
-          This allows you to define your custom strategy.
-
+{{#function name="retry"}}
+{{>docs}}
+{{/function}}
 
 
 ## Development (for contributors)

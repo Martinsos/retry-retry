@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "Javascript library for easy retrying of promise based tasks.",
   "main": "retry-retry.js",
-  "files": ["retry-retry.js"],
+  "files": [
+    "retry-retry.js"
+  ],
   "scripts": {
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "build-readme": "jsdoc2md --param-list-format list --template README.hbs --files retry-retry.js > README.md"
   },
   "repository": {
     "type": "git",
@@ -25,6 +28,7 @@
   },
   "homepage": "https://github.com/Martinsos/retry-retry#readme",
   "devDependencies": {
-    "jest": "^22.1.4"
+    "jest": "^22.1.4",
+    "jsdoc-to-markdown": "^4.0.1"
   }
 }

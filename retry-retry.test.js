@@ -110,6 +110,8 @@ test('works for promise-task with custom retry strategy', async () => {
   expect(totalTime).toBeGreaterThan(190)
 })
 
+// TODO(martin): test retryOn
+
 test('rejects with LimitReached error for promise-task that retries too many times', async () => {
   expect.assertions(2)
 
