@@ -6,7 +6,7 @@ retry-retry
 [![Coverage Status](https://img.shields.io/coveralls/Martinsos/retry-retry/master.svg?style=flat)](https://coveralls.io/github/Martinsos/retry-retry?branch=master)
 =====
 
-Javascript library for easy retrying of tasks (task is just a function).
+Javascript library for easy retrying of tasks (task is just a function that returns promise).
 
 Simple example (polling for a resource) using async/await:
 ```js
@@ -65,7 +65,7 @@ read on).
 It "signals" final failure (or "giving up") by rejecting the returned promise.
 
 Finally, your function signals neither success nor failure but wish to try again by calling
-callback that it receives as a first paramater ('_retry' in examples) at least once before
+callback that it receives as a first parameter ('_retry' in examples) at least once before
 resolving the returned promise (Yes, this is the condition mentioned before! You must not call
 `_retry()` if you wish to signal success, obviously).
 In that case, it will be retried. Please note that calling `_retry()` does not affect execution of

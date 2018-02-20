@@ -17,11 +17,11 @@ const createPromiseTask = (numFails, resolveValue, rejectError) => {
   const stats = {
     numTries: 0
   }
-  const task = async (retry) => {
+  const task = async () => {
     stats.numTries++
     if (numFails > 0) {
       numFails--
-      return retry()
+      throw retry.Retry
     }
     if (resolveValue) {
       return resolveValue
@@ -110,32 +110,30 @@ test('works for promise-task with custom retry strategy', async () => {
   expect(totalTime).toBeGreaterThan(190)
 })
 
-test('rejects with default error for promise-task that retries too many times', async () => {
+test('rejects with LimitReached error for promise-task that retries too many times', async () => {
   expect.assertions(2)
 
   const { task, stats } = createPromiseTask(10, 42)
   try {
     const result = await retry(task, { maxTries: 5 })
   } catch (e) {
-    expect(e.retryLimitReached).toEqual(true)
+    expect(e).toEqual(retry.LimitReached)
   }
   expect(stats.numTries).toEqual(5)
 })
 
-test('rejects with custom error for promise-task that takes too long', async () => {
+test('rejects with LimitReached error for promise-task that takes too long', async () => {
   expect.assertions(4)
 
   const { task, stats } = createPromiseTask(5, 42)
-  const errorOnLimit = 'TotalTimeExceeded'
   const startTime = performance.now()
   try {
     const result = await retry(task, {
       pauseMs: 50,
-      maxTotalTimeMs: 125,
-      errorOnLimit: errorOnLimit
+      maxTotalTimeMs: 125
     })
   } catch (e) {
-    expect(e).toEqual(errorOnLimit)
+    expect(e).toEqual(retry.LimitReached)
   }
   const totalTime = performance.now() - startTime
 

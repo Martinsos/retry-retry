@@ -26,26 +26,37 @@ const chooseBestTimeNowMsFunction = () => {
 
 const timeNowMs = chooseBestTimeNowMsFunction()
 
+// Singleton object. If promise is rejected with it, it is recognized as signal to retry the task.
+const Retry = Object.freeze({})
+// Singleton object. retry() is rejected with it if limit (time or num tries) is reached.
+const LimitReached = Object.freeze({})
+
+// TODO(martin): update readme.
 /**
  * Tries to execute given task repeatedly until the task succeeds, fails, or until retry limit
  * (number of tries or total time) is reached.
  *
  * @param {function(retry)} task  Function that receives retry() callback and returns promise.
- *     If promise is resolved without retry() having been called, task succeded, retrying stopped
- *     and result is propagated.
- *     If promise is resolved with retry() having been called at least once, task is retried.
- *     If promise is rejected, task failed, retrying is stopped and error is propagated.
+ *     If task is resolved, task succeded, retrying stops and result is propagated.
+ *     If task is rejected with retry.Retry (or some other chosen error, see retryOn param),
+ *       task is retried.
+ *     If task is rejected with any other error, task failed, retrying stops and error is
+ *       propagated.
+ *     If limit (maxTries or maxTotalTime) is reached, task failed, retrying stops and promise is
+ *       rejected with retry.LimitReached.
  * @param {Object} params  Additional options.
  *     - {Integer} pauseMs  Pause between the end of the last try and the start of the next try,
  *           in milliseconds. This is default behaviour, but it might be modified with
  *           retryStrategy option. Has to be non-negative. Default is 0.
- *     - {Integer} maxTries  Number of tries after which retrying will stop.
+ *     - {Integer} maxTries  Retry limit. Number of tries after which retrying will stop.
  *           Has to be non-negative. Default is 0, which means there is no limit on number of tries.
- *     - {Integer} maxTotalTimeMs  If more than maxTotalTimeMs milliseconds has elapsed since the first
- *           try started, retrying will stop. Has to be non-negative. Default is 0, which means
- *           there is no time limit.
- *     - {Object} errorOnLimit  Error that will be returned if limit (maxTries or maxTotalTime)
- *           is reached. Default is { retryLimitReached: true }.
+ *     - {Integer} maxTotalTimeMs  Retry limit. If more than maxTotalTimeMs milliseconds has elapsed
+ *            since the first try started, retrying will stop. Has to be non-negative.
+ *            Default is 0, which means there is no time limit.
+ *     - {func(error)} retryOn  Function that takes error with which promise was rejected and
+ *           returns true if task should be repeated or false if error should be propagated.
+ *           This way you can trigger retry on different errors than just retry.Retry.
+ *           By default, it is (e) => e === retry.Retry.
  *     - {String || function} retryStrategy  Strategy that will be used to determine pause
  *           between two consecutive tries. Possible values:
  *           - 'linear'  This is default strategy. Same pause of pauseMs milliseconds is always
@@ -57,10 +68,8 @@ const timeNowMs = chooseBestTimeNowMsFunction()
  *                 So after first try numTries will be 1.
  *     You can define one retry limit, none of them, or both: when at least one of them is reached,
  *     retrying is stopped.
- * @return {Promise}  If tasks was successfuly done, this promise is resolved with the same value
- *     that task's promise was resolved with.
- *     If task's promise was rejected with an error, this promise is rejected with that same error.
- *     If retry limit was reached, this promise is rejected with errorOnLimit error.
+ * @return {Promise}  Resolved with taskss value on task success or reject with task's error on task
+ *     failure. Rejected with retry.LimitReached if one of retry limits was reached.
  */
 const retry = async (task, params = {}) => {
   if (typeof task !== 'function') throw { error: 'Parameter "task" must be a function.' }
@@ -69,17 +78,20 @@ const retry = async (task, params = {}) => {
   const pauseMs = Math.max(0, params.pauseMs) || 0
   const maxTries = Math.max(0, params.maxTries) || 0
   const maxTotalTimeMs = Math.max(0, params.maxTotalTimeMs) || 0
-  const errorOnLimit = params.errorOnLimit || { retryLimitReached: true }
+  const retryOn = params.retryOn || (e => e === Retry)
   const retryStrategy = params.retryStrategy || 'linear'
 
   const startTimeMs = timeNowMs()
   for (let tryIdx = 0; maxTries == 0 || tryIdx < maxTries; tryIdx++) {
-    let retry = false
-
-    const taskResult = await task(() => retry = true)
-
-    if (!retry) {
-      return taskResult  // Propagate the result. We are done, task was successful!
+    // Run the task. If it succeeds, return the resolved value. If it is rejected with
+    // error, throw error. If it is rejected with special Retry value, continue with retrying
+    // the task.
+    try {
+      return await task()
+    } catch (error) {
+      if (!retryOn(error)) {
+        throw error
+      }
     }
 
     // Task asked for a retry, so let's retry!
@@ -93,7 +105,7 @@ const retry = async (task, params = {}) => {
     if (maxTotalTimeMs > 0) {
       const elapsedTimeMs = timeNowMs() - startTimeMs
       if (elapsedTimeMs + actualPauseMs > maxTotalTimeMs) {
-        throw errorOnLimit
+        throw LimitReached
       }
     }
 
@@ -101,8 +113,12 @@ const retry = async (task, params = {}) => {
     await new Promise(resolve => setTimeout(resolve, actualPauseMs))
   }
 
-  throw errorOnLimit
+  throw LimitReached
 }
+
+// Export Retry and LimitReached through the retry() function, as it's member.
+retry.Retry = Retry
+retry.LimitReached = LimitReached
 
 module.exports = retry
 if (window) window['retry-retry'] = retry
